@@ -40,6 +40,8 @@ None — this is a standalone leaf script, invoked directly from the CLI.
 
 CLI ID → `scrape_course` → `fetch_course_info` (resolves bundle vs. leaf course) → if bundle: `fetch_bundle_courses` recurses per sub-course; if leaf: `fetch_sessions` per section → `html_to_md` per lesson → per-lesson `.md` file + course-level `_combined.md`, all under `tc_scrape_output/<course-slug>/<module-slug>/`.
 
+`login()` treats a post-submit URL still containing `login` as inconclusive rather than an immediate failure — the SPA route can lag the actual session cookie — and double-checks via an authenticated call to `viewer/userInfos.json` before declaring failure. `scrape_course` tracks per-lesson empty-body counts and, if any lesson came back with no text, prints a hint to rerun without `--no-login` or verify course enrollment (empty content is often a permissions symptom, not a parse failure).
+
 ## Key Decisions
 
 - See [[../decisions/adr-1-playwright-over-requests]] for why Playwright drives login instead of a plain HTTP client.

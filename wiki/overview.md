@@ -10,7 +10,7 @@ updated: 2026-07-03
 
 It is one script ([[modules/scrape_trainercentral]]): log in via Playwright (handles the Zoho IAM nested-iframe password step), recursively walk a bundle or course through TrainerCentral's undocumented JSON API, convert each lesson's HTML to Markdown, and write per-lesson files plus a combined per-course file. Scraping is idempotent — a course already scraped (its `_combined.md` exists) is skipped on rerun.
 
-This is a personal utility, not portfolio/showcase material — see [[../CLAUDE.md]] scope note. Login credentials live in `.env` and scraped course content lives in `tc_scrape_output/`; both are gitignored and must never be committed or published, since the former is a live account password and the latter is the vendor's copyrighted course content.
+This is a personal utility, not portfolio/showcase material — see the "Scope note" in the project's `CLAUDE.md`. Login credentials live in `.env` and scraped course content lives in `tc_scrape_output/`; both are gitignored and must never be committed or published, since the former is a live account password and the latter is the vendor's copyrighted course content.
 
 ## Domain
 

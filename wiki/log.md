@@ -4,6 +4,16 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-03 — backtest
+
+- Ran `wiki-maintain` at backtest depth (4 passes) on the post-map wiki.
+- Pass 1 (lint): 1 broken wikilink found (`overview.md` → `[[../CLAUDE.md]]`, pointed outside the wiki tree) — fixed. No orphans, no contradictions.
+- Pass 2 (accuracy): 12/12 factual claims verified against source — 100%.
+- Pass 3 (coverage): 2 minor undocumented behaviors found in `login()`'s ambiguous-URL double-check and the empty-lesson hint — added to [[modules/scrape_trainercentral]]. No unfiled debt or hidden decisions.
+- Pass 4 (Q&A probe): 5/5 representative questions answered correctly from wiki alone — 100%.
+- Scorecard filed at [[analyses/backtest-initial-map-2026-07-03]]: 100% structural / 100% accuracy / 100% coverage / 100% Q&A fidelity.
+- All findings fixed same session, none deferred.
+
 ## 2026-07-03 — map
 
 - Ran `wiki-map` cold-start on the codebase: single-file scraper (`scrape_trainercentral.py`, 263 lines).
