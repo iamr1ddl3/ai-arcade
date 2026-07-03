@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Wiki system
+*.pre-wiki.bak.*
+.claude/edit-log.txt
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Scraped course content — never publish
+tc_scrape_output/

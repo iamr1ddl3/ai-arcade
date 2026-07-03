@@ -1,0 +1,40 @@
+{
+  "_comment": "Claude Code project settings. Hooks fire automatically at the events configured below. Skills load on demand when referenced by name. Hooks are written in Python for cross-platform support (Windows + macOS + Linux).",
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "_comment": "Blocks dangerous bash commands BEFORE they run. Exit 1 = blocked, exit 0 = allowed.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/block-dangerous-commands.py"
+          }
+        ]
+      },
+      {
+        "_comment": "Enforces wiki invariants: raw/ is immutable, wiki/log.md is append-only.",
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/protect-wiki-invariants.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "_comment": "Logs every file edit to .claude/edit-log.txt with timestamp. Non-blocking.",
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/wiki-edit-log.py"
+          }
+        ]
+      }
+    ]
+  }
+}
