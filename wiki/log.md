@@ -4,6 +4,15 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-04 — retry attempt (blocked, no data loss)
+
+- User approved re-scrape of the 9 incomplete courses, with an explicit requirement to back up existing data first.
+- Backed up `tc_scrape_output/` (9.7M, 22 courses) to `tc_scrape_output.bak.20260704/` before any deletion; added `tc_scrape_output.bak.*/` to `.gitignore` (never publish scraped content, including backups).
+- Deleted the 9 incomplete course folders identified in [[debt/incomplete-scrapes-empty-lessons]], re-ran `scrape_trainercentral.py 23022000000014019`.
+- Result: the authenticated bundle-level fetch failed entirely this time — `courses.json`, `getBundleCourses.json` (v4), and the legacy fallback all 500'd, worse than the single-course failure seen 2026-07-03. Anonymous access to the same bundle endpoint still returns 200, confirming an authenticated-session-specific vendor outage, not a credentials or script problem.
+- Restored the 9 deleted folders from the backup; `diff -rq` against backup shows zero differences — confirmed no data loss, state identical to before the attempt.
+- Updated [[debt/incomplete-scrapes-empty-lessons]] with the retry attempt and outcome. Recommend waiting before the next retry — endpoint has now failed on two separate occasions.
+
 ## 2026-07-04 — scrape completeness check
 
 - User asked whether scraping worked for all pending courses. Rebuilt `.venv` (previous one was a stale Windows venv — `Scripts/*.exe`, unusable on macOS); installed playwright/beautifulsoup4/html2text + `playwright install chromium`.

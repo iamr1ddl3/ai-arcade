@@ -49,6 +49,16 @@ Two most affected courses (`autogen-essentials`, `statistics-math-for-aiml-inter
 2. If `autogen-essentials` still 500s on retry, this is a live vendor-side issue outside this script's control; no code fix will help until the endpoint recovers.
 3. Optional low-effort fix for the general class of problem: add a lightweight post-scrape completeness check (e.g. a `--verify` flag or separate script) that flags any course whose `_combined.md` exists but contains a high ratio of headers-with-no-body, rather than relying purely on file-existence for idempotency. Not implemented — flagged here for future consideration, not committed to.
 
+## Retry Attempt — 2026-07-04
+
+Before retrying, `tc_scrape_output/` was fully backed up to `tc_scrape_output.bak.20260704/` (gitignored, same as the primary output dir).
+
+The 9 incomplete course folders were deleted and the scraper re-run against bundle `23022000000014019`. Result: **the authenticated bundle-level fetch itself failed entirely** — `courses.json?courseId=`, `getBundleCourses.json` (v4), and the legacy `trainercentral/viewer/.../getBundleCourses.json` fallback all returned HTTP 500 (`ST_94 INVALID_COURSE` / `ST_01 GENERAL_FAILURE`), even via real page navigation (ruling out a `context.request` header/cookie quirk). Anonymous access to the same bundle endpoint returned 200 with all 22 courses, confirming this is an **authenticated-session-specific** vendor-side outage, worse than the single-course 500 seen during initial diagnosis — the whole bundle is currently unreachable while logged in.
+
+Since the scraper produced no output for the 9 deleted folders, they were restored from the backup — verified via `diff -rq` against the backup with zero differences. **No data was lost; state is identical to before the retry attempt.**
+
+**Next steps:** retry later once TrainerCentral's authenticated API recovers. No further attempts should be made in rapid succession — the endpoint has now failed consistently across two separate sessions/attempts (2026-07-03 single-course check, 2026-07-04 full retry), suggesting this may take longer than a transient blip to resolve.
+
 ## Related
 
 - [[../modules/scrape_trainercentral]]
