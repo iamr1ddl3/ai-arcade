@@ -4,6 +4,16 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-04 — scrape completeness check
+
+- User asked whether scraping worked for all pending courses. Rebuilt `.venv` (previous one was a stale Windows venv — `Scripts/*.exe`, unusable on macOS); installed playwright/beautifulsoup4/html2text + `playwright install chromium`.
+- Confirmed bundle `23022000000014019` has exactly 22 courses (live API), matching all 22 local folders — no course is entirely un-attempted.
+- Counted real per-lesson `.md` files (not `_combined.md` header counts, which double-count nested markdown headers inside lesson bodies) and checked for empty body content per lesson.
+- Result: 144/1192 lessons (12.1%) across 9 of 22 courses have a title but empty body. `autogen-essentials` and `statistics-math-for-aiml-interviews` are **0% complete** despite having a `_combined.md` (so the idempotency skip-check treats them as done). `langchain-mastery` is 42% complete.
+- Reproduced root cause live: authenticated `courses.json?uniqueKey=autogen` consistently 500s (`ST_94 INVALID_COURSE`, 5/5 retries) even though login itself still works and the course resolves fine anonymously at the structural level (description empty when anonymous, as expected).
+- Filed [[debt/incomplete-scrapes-empty-lessons]] with full per-course completeness table and root cause.
+- Recommended: delete + retry the affected course folders; `autogen-essentials` may still fail until the vendor endpoint recovers (outside script's control).
+
 ## 2026-07-03 — backtest
 
 - Ran `wiki-maintain` at backtest depth (4 passes) on the post-map wiki.

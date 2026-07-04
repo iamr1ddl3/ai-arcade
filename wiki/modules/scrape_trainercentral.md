@@ -51,6 +51,7 @@ CLI ID → `scrape_course` → `fetch_course_info` (resolves bundle vs. leaf cou
 - [[../debt/plaintext-credentials-in-env]]
 - [[../debt/no-tests]]
 - [[../debt/undocumented-api-dependency]]
+- [[../debt/incomplete-scrapes-empty-lessons]] — idempotency check (`_combined.md` existence) does not catch partial/empty scrapes; 2 of 22 courses in `tc_scrape_output/` are 0% complete despite being marked done
 
 ## Related
 
