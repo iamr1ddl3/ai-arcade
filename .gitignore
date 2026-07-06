@@ -32,3 +32,12 @@ build/
 
 # Scraped course content — never publish
 tc_scrape_output/
+tc_scrape_output.bak.*/
+
+# Generated arcade content — derives from gitignored scraped content, never publish
+arcade/data/
+
+# Content transform pipeline — local only, never publish source-derived intermediates or keys
+transformed/
+arcade/.transform_cache.json
+.transform_cache.json

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0d14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>AIdemy Arcade</title>
+  <link rel="stylesheet" href="styles.css?v=10">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/home">🎮 AIdemy&nbsp;Arcade</a>
+    <div class="stats-strip" id="statsStrip"><!-- filled by app.js --></div>
+    <nav class="topnav">
+      <a href="#/home">Map</a>
+      <a href="#/profile">Profile</a>
+    </nav>
+  </header>
+
+  <main id="app"><!-- screens rendered here --></main>
+
+  <!-- mobile bottom tab bar (hidden on desktop via CSS) -->
+  <nav class="tabbar" id="tabbar">
+    <a href="#/home" data-tab="home"><span class="ico">🗺️</span>Map</a>
+    <a href="#/daily" data-tab="daily"><span class="ico">📅</span>Daily</a>
+    <a href="#/gauntlet" data-tab="gauntlet"><span class="ico">💀</span>Gauntlet</a>
+    <a href="#/profile" data-tab="profile"><span class="ico">👤</span>Profile</a>
+  </nav>
+
+  <div id="loadError" class="load-error" hidden>
+    <h2>Couldn't load content</h2>
+    <p>The game data (<code>data/content.json</code>) failed to load.</p>
+    <p>Browsers block <code>fetch()</code> from <code>file://</code>. Run a local server
+       from the <code>arcade/</code> folder instead:</p>
+    <pre>python3 -m http.server 8000 --directory arcade</pre>
+    <p>then open <a href="http://localhost:8000/">http://localhost:8000/</a>.
+       If the file is missing, build it first: <code>python3 arcade/generate_content.py</code></p>
+  </div>
+
+  <script src="app.js?v=10"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Cloudflare Pages headers (https://developers.cloudflare.com/pages/configuration/headers/)
+
+# Content is regenerated on each deploy — don't let browsers cache it stale.
+/data/content.json
+  Cache-Control: no-cache
+
+# Static app shell can cache briefly; a redeploy changes the URL fingerprint anyway.
+/app.js
+  Cache-Control: max-age=3600
+/styles.css
+  Cache-Control: max-age=3600
+
+# Baseline security headers for the whole site.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
