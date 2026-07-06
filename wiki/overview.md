@@ -1,35 +1,41 @@
 ---
 title: aidemy-bundle — Overview
 type: overview
-updated: 2026-07-03
+updated: 2026-07-06
 ---
 
 # aidemy-bundle — Overview
 
-`aidemy-bundle` is a single-purpose CLI tool that scrapes the user's own AIdemy course content, hosted on TrainerCentral (`aidemy.trainercentralsite.in`), and saves it locally as Markdown — organized by course and module, ready to feed to an LLM for study or reference. It exists so course material the user has paid for and is enrolled in can be read/searched/queried offline instead of only through the TrainerCentral web viewer.
+`aidemy-bundle` started as a single-purpose CLI tool that scrapes the user's own AIdemy course content (hosted on TrainerCentral, `aidemy.trainercentralsite.in`) to local Markdown. It has since grown into a **content pipeline + game**: the scraped lessons are rewritten into original derivative material by an LLM pipeline, and served as **AIdemy Arcade** — a zero-build, gamified interview-prep web app (quizzes, flashcards with spaced repetition, boss battles, roguelike gauntlet, daily challenges) covering 20 courses / 1022 playable lessons.
 
-It is one script ([[modules/scrape_trainercentral]]): log in via Playwright (handles the Zoho IAM nested-iframe password step), recursively walk a bundle or course through TrainerCentral's undocumented JSON API, convert each lesson's HTML to Markdown, and write per-lesson files plus a combined per-course file. Scraping is idempotent — a course already scraped (its `_combined.md` exists) is skipped on rerun.
+Four modules, one pipeline (see [[flows/content-pipeline]]):
 
-This is a personal utility, not portfolio/showcase material — see the "Scope note" in the project's `CLAUDE.md`. Login credentials live in `.env` and scraped course content lives in `tc_scrape_output/`; both are gitignored and must never be committed or published, since the former is a live account password and the latter is the vendor's copyrighted course content.
+1. [[modules/scrape_trainercentral]] — Playwright login + API walk → `tc_scrape_output/` (immutable-ish source corpus, gitignored).
+2. [[modules/arcade-transform]] — GLM-5.2 substantial rewrite (+ pluggable judge; the production gate is an independent Claude judge pass) → `transformed/` derivative content, per [[decisions/adr-3-transform-then-publish]].
+3. [[modules/arcade-generator]] — stdlib, deterministic: markdown → `content.json` (MCQ/cloze/steps per lesson), per [[decisions/adr-2-zero-build-vanilla-js-rule-based-distractors]].
+4. [[modules/arcade-app]] — vanilla-JS SPA game; localStorage progress; themable (Cyber Neon default); mobile tab-bar navigation.
+
+Privacy invariants: `.env` (credentials), `tc_scrape_output/` (purchased content), `transformed/`, `content.json`, and the transform cache are all gitignored. Only app code and the wiki are tracked. The public deploy (Cloudflare Pages, pending) ships **only derivative content** that passed an independent LLM judge.
 
 ## Domain
 
-`tooling` — cross-cutting personal dev-workflow utility, not AI/ML showcase work.
+`tooling` — personal dev-workflow utility grown into a personal learning product; still not portfolio/showcase material (see CLAUDE.md scope note).
 
 ## Status
 
-`maintenance` — the script works and is run on demand to pull new/updated course content; no active feature development planned.
+`active` — content pipeline complete for all fully-scraped courses; game feature-complete for v1; remaining: git commit of the arcade work, Cloudflare Pages deploy (user-gated), 2 courses blocked on a vendor API outage ([[debt/incomplete-scrapes-empty-lessons]]).
 
 ## Key entry points
 
 - [[architecture/system-map]]
-- [[modules/scrape_trainercentral]]
+- [[flows/content-pipeline]]
+- [[modules/arcade-app]]
 - [[index]]
 
 ## Open questions
 
-1. Should credential handling move off `.env` to `keyring`/OS keychain, or is prompt-only (`getpass`) sufficient given this is single-user? See [[debt/plaintext-credentials-in-env]].
-2. If TrainerCentral's `showtime/api/v4` endpoints change shape, how will breakage be detected — only at next manual run? See [[debt/undocumented-api-dependency]].
-3. Is there a need to re-scrape courses whose content has been updated since the last scrape (currently skipped entirely if `_combined.md` exists)?
-4. Should output support formats beyond Markdown (e.g. plain text, JSON) for different downstream LLM ingestion pipelines?
-5. Is broader TrainerCentral/AIdemy-specific parsing (quizzes, video transcripts, attachments) in scope, or is lesson text-only permanently sufficient?
+1. Credential handling (`.env` vs keychain) — see [[debt/plaintext-credentials-in-env]].
+2. Vendor-API breakage detection is still "notice at next manual run" — see [[debt/undocumented-api-dependency]]; the 2026-07 outage showed a read-only probe pattern that could be scripted.
+3. Re-scrape-on-update remains unsolved (idempotency skips any course with `_combined.md`); blocked-course recovery also waits on the vendor.
+4. When the Workers/D1 backend lands (accounts/leaderboards), does progress migrate from localStorage or start fresh?
+5. Should the remaining 2 blocked courses ship later as an incremental content drop (generator supports this with zero code changes)?

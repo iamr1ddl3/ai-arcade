@@ -22,7 +22,7 @@ Four passes against `scrape_trainercentral.py` (263 lines, the only source file)
 
 | Pass | Metric | Score | Notes |
 |---|---|---|---|
-| 1. Lint (structural) | Broken links / orphans / contradictions | 1 broken link found, fixed | `wiki/overview.md:13` linked `[[../CLAUDE.md]]` — a project file outside the wiki tree, violating wikilink convention. Rewrote as plain-text reference. No orphan pages; no contradictions. |
+| 1. Lint (structural) | Broken links / orphans / contradictions | 1 broken link found, fixed | `wiki/overview.md:13` linked ``../CLAUDE.md`` — a project file outside the wiki tree, violating wikilink convention. Rewrote as plain-text reference. No orphan pages; no contradictions. |
 | 2. Accuracy spot-check | 12/12 claims verified | **100%** | Line counts, function signatures, retry/backoff values, endpoint URLs, idempotency behavior, iframe selector — all matched source exactly. |
 | 3. Coverage gap analysis | Undocumented patterns found | 2 minor gaps found, fixed | `login()`'s ambiguous-URL double-check via `userInfos.json`, and the empty-lesson-count user hint, were real behavior not yet in the module page. Added to Data Flow section. No unfiled debt or hidden decisions found beyond the 3 existing debt pages + ADR-1. |
 | 4. Q&A probe | 5/5 questions answered correctly from wiki alone | **100%** | Covered: no-login usage, Playwright-over-requests rationale, idempotency, credential storage/safety, API-breakage risk. |

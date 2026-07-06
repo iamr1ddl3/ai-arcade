@@ -1,29 +1,33 @@
 ---
 title: No automated tests
 type: debt
-severity: low
+severity: medium
 area: [[../modules/scrape_trainercentral]]
 created: 2026-07-03
 sources: []
-updated: 2026-07-03
+updated: 2026-07-06
 ---
 
 # No automated tests
 
-`scrape_trainercentral.py` has zero automated tests — no unit tests for `slugify`/`html_to_md`, no integration test (even mocked) for the login or scrape-walk logic.
+Nothing in the project has automated tests. Originally this covered only `scrape_trainercentral.py`; the scope has since grown to the whole pipeline: `arcade/generate_content.py` (question generation with invariants worth locking in), `arcade/transform_content.py` (cache keys, verdict parsing, network retry), and `arcade/app.js` (~1,600 lines of game logic: SM-2 scheduling, streak/freeze rules, quest counters, gauntlet state, boss HP, betting XP math).
 
 ## Root Cause
 
-Personal single-purpose scraper written to solve an immediate need; correctness was validated by running it against real courses, not by a test suite.
+Personal single-purpose scraper written to solve an immediate need; correctness validated by running it against real data. The arcade grew the same way — every feature was verified manually in a real browser (documented per-session in [[../log]]), but none of those checks are repeatable.
 
 ## Impact
 
-Low — the script is idempotent per-course (skips courses with an existing `_combined.md`) and failures are visible immediately via stdout, so regressions are easy to notice on next run. Low blast radius since it's a personal, non-shared tool.
+Bumped to **medium** (2026-07-06): the app is heading to a public deploy, and the game-state rules (XP economy, streak freezes, spaced-repetition scheduling) now have enough edge cases that a regression could silently corrupt player progress. The generator's quiz invariants (4 distinct options, answerIndex correctness) are re-checked ad hoc after every build rather than by a test.
 
 ## Remediation
 
-Not planned. If the script grows (more site support, more output formats), add unit tests for the pure functions (`slugify`, `html_to_md`) first — they need no network mocking.
+Highest-value first, all runnable without network:
+1. Generator invariants as a pytest (parse a fixture course → assert option/answer/cloze/steps invariants + determinism).
+2. `transform_content.py` pure parts: `cache_key` stability, `parse_verdict` tolerance, `extract_steps`/`cloze_term`.
+3. `app.js` state rules via a thin node harness (`scheduleCard` transitions, `bumpStreak` freeze cases, quest claim-once).
+Playwright E2E for the game flows only if regressions actually start appearing.
 
 ## Related
 
-- [[../modules/scrape_trainercentral]]
+- [[../modules/scrape_trainercentral]] · [[../modules/arcade-generator]] · [[../modules/arcade-transform]] · [[../modules/arcade-app]]

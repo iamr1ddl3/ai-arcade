@@ -5,7 +5,7 @@ severity: high
 area: [[../modules/scrape_trainercentral]]
 created: 2026-07-04
 sources: []
-updated: 2026-07-04
+updated: 2026-07-05
 ---
 
 # Incomplete scrapes — empty lesson bodies in tc_scrape_output/
@@ -59,7 +59,35 @@ Since the scraper produced no output for the 9 deleted folders, they were restor
 
 **Next steps:** retry later once TrainerCentral's authenticated API recovers. No further attempts should be made in rapid succession — the endpoint has now failed consistently across two separate sessions/attempts (2026-07-03 single-course check, 2026-07-04 full retry), suggesting this may take longer than a transient blip to resolve.
 
+## Excluded lesson — un-fixable code defensibility (2026-07-06)
+
+During the full 20-course rollout, the Claude judge pass flagged `scenerio-based-questions/langchain/02-scenario-2-incorrect-tool-selection` as failing **defensibility** even after two re-transforms: its content is inherently a set of tool-definition JSON/code blocks (router policy, `tool_registry` with tool descriptions + schemas) where GLM could only rename variables, not genuinely restructure — leaving the code near-verbatim to the source. Rather than ship near-source code publicly, the lesson was **excluded** (transformed file removed + cache entry evicted; its section still has 9 lessons). This is the pipeline's intended exclude-and-log path applied manually. 1 of 688 in the batch (1 of 1022 published). If needed later, it could be hand-rewritten. Distinct from the scrape-outage debt above — this is a transform-defensibility limit on code-heavy content, not a missing scrape.
+
+## Read-only recovery probe — 2026-07-05 (still down)
+
+Before any further transform batches, ran a **read-only** probe (login + raw HTTP status on the content endpoints, NO writes to `tc_scrape_output/`) to check whether the vendor outage had cleared. It has **not**:
+
+- `login` / `userInfos.json` → **200** (auth still works; account resolves as Ravi Vaghela).
+- `getBundleCourses.json` (v4 AND legacy fallback) → **500 `ST_01 GENERAL_FAILURE`** ("TrainerCentral internal error").
+- `courses.json?uniqueKey=autogen` → **500 `ST_01`**.
+- **Control:** `courses.json?uniqueKey=advanced-rag` — a course we *already scraped successfully* — **also 500s.** This proves the failure is a **general vendor-side outage on all authenticated course-content fetches**, not specific to the incomplete courses.
+
+Note: the wrapper `get_json()` can mask this — it returned `None`/empty without raising on the v4 bundle call, so a naive "did it throw?" check reads as "recovered." Only the raw HTTP status (`context.request.get().status`) reveals the 500. Any future recovery check must inspect the status code, not just whether the call raised.
+
+**Conclusion:** third consecutive failure (2026-07-03, 2026-07-04, 2026-07-05). Do NOT re-scrape — the endpoint returns nothing while down and a delete-then-scrape would only risk local data. The 12 fully-scraped courses can be transformed independently while waiting. Re-probe (read-only, zero risk) before any future scrape attempt.
+
+## Mislabeled lesson — title/body mismatch (found 2026-07-05)
+
+A distinct sub-class of scrape defect, surfaced by the full independent judge pass over the transformed content: `llm-evaluation/ai-as-a-judge-advanced-evaluation/09-when-is-self-evaluation-useful-and-what-risks-does-it-introduce.md` has a title asking *"When is self-evaluation useful, and what risks does it introduce?"* but its **body answers a different question** — "why treat AI evaluation as a system." This mismatch exists in the **source** `tc_scrape_output/` lesson; the GLM rewrite faithfully reproduced it (correctness pass, but quality fails the title-vs-body coherence check). Re-transforming cannot fix it — the defect is in the scraped source, not the rewrite. Only 1 such case found across 297 judged lessons in the 5 non-advanced-rag courses.
+
+**Resolved 2026-07-05:** source title hand-corrected to *"Why should AI evaluation be treated as a system rather than a single metric?"* (matches the body), lesson re-transformed (1 fresh API call, 49 cache-hits), and independently re-judged by Claude → pass (quality 9, defensibility 9, title matches body). `tc_scrape_output/` is NOT under `raw/` so the source edit is permitted.
+
+**Newly surfaced (low severity, not actioned):** fixing #09's title revealed it is a **near-duplicate** of lesson #10 in the same section (`10-why-should-ai-evaluation-be-treated-as-a-system-rather-than-just-a-model`) — both now teach "evaluation as a system." This is a pre-existing source redundancy (the two scraped questions overlap), not caused by the fix; #09 was simply mislabeled before so the overlap was hidden. Impact: minor — two similar quiz cards in one section. Not worth removing content over; flagged for awareness.
+
 ## Related
 
 - [[../modules/scrape_trainercentral]]
 - [[undocumented-api-dependency]]
+- [[../modules/arcade-generator]] — downstream consumer whose playable scope this debt caps (~199 lessons skipped; 2 courses drop out entirely)
+- [[../modules/arcade-app]] — the game surface that renders only the non-empty lessons
+- [[../modules/arcade-transform]] — skips empty source lessons before rewriting, so the debt caps the derivative content set too
