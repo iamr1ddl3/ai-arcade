@@ -1,28 +1,46 @@
 # PixelPlayground 🎮
 
-A zero-build, browser-based **learning game** for AI/ML interview prep. Turns study
-material into quizzes, flashcards, boss battles, and a roguelike gauntlet — with XP,
-levels, streaks, badges, and three themes. No frameworks, no npm, no build step.
+> **Level up your AI/ML interview prep by *playing* it.**
+> Study material becomes quizzes, flashcards, boss battles, and a roguelike gauntlet —
+> with XP, levels, streaks, badges, and three themes. No frameworks, no npm, no build step.
 
-**▶️ Live:** https://ai-arcade-13g.pages.dev
+<p>
+  <img alt="Content: 20 courses" src="https://img.shields.io/badge/📚_courses-20-6c5ce7">
+  <img alt="Lessons: 1022" src="https://img.shields.io/badge/🎯_lessons-1022-ffd23f">
+  <img alt="Build step: none" src="https://img.shields.io/badge/⚙️_build_step-none-2ecc71">
+  <img alt="Backend: none" src="https://img.shields.io/badge/💾_backend-localStorage-4fc3f7">
+  <img alt="Dependencies: zero" src="https://img.shields.io/badge/📦_runtime_deps-0-ff5c72">
+</p>
+
+**▶️ PLAY NOW → https://ai-arcade-13g.pages.dev**
 
 ---
 
-## What it is
+## 🕹️ Insert coin
 
 One HTML file, one JS file, one CSS file, plus a stdlib-only Python generator that emits
-the game data as a single `content.json`. Runs entirely in the browser; progress is saved
-to `localStorage` (no backend, no account).
+the game data as a single `content.json`. Runs entirely in the browser; your progress saves
+to `localStorage` — no backend, no account, no lives lost to a lost session.
 
-- **20 courses / 1022 lessons** of AI/ML interview-prep content.
-- **World Map** — each course a continent, each section a zone; sections unlock in order.
-- **Practice quiz** — untimed multiple-choice. +10 XP per correct answer.
-- **Flashcards + spaced repetition** — Anki-style (SM-2-lite) self-rated review.
-- **Boss Battle** — timed 60s section quiz; ≥70% unlocks the next section (+100 XP, badge).
-- **Roguelike Gauntlet** — endless cross-course rapid-fire, 3 lives, relics every 5 survived.
-- **Confidence betting, daily challenges, themes** (Cyber Neon / Nebula / Daylight).
+## 🎲 Game modes
 
-## Run it locally
+| Mode | What you do | Reward |
+|------|-------------|--------|
+| 🗺️ **World Map** | Each course a continent, each section a zone — clear them in order | Unlock the next zone |
+| ⚔️ **Practice Quiz** | Untimed multiple-choice drilling | +10 XP / correct |
+| 🃏 **Flashcards** | Anki-style spaced repetition (SM-2-lite), self-rated | Cards graduate as you master them |
+| 👑 **Boss Battle** | Timed 60s section quiz — land **≥70%** to win | +100 XP · badge · next section |
+| 💀 **Roguelike Gauntlet** | Endless cross-course rapid-fire, 3 lives, relics every 5 survived | High score & bragging rights |
+| 🎰 **Confidence Bets** | Wager on your own answer | Double or nothing |
+
+Plus **daily challenges** and three unlockable themes — ⚡ Cyber Neon · 🌌 Nebula · ☀️ Daylight.
+
+## ⭐ Level up your stats
+
+Every action feeds one progression system: **XP → levels → streaks → 🏅 badges.** Miss a day
+and your streak drops — unless you've banked a freeze. It's study material with a scoreboard.
+
+## ▶️ Run it locally
 
 ```bash
 python3 -m http.server 8000 --directory arcade
@@ -36,7 +54,7 @@ open http://localhost:8000/
 > fresh clone serves the app shell without lessons. The repo is the app + tooling; the
 > content is supplied separately at deploy time.
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 scrape → transform (LLM rewrite + judge) → generate → play
@@ -50,7 +68,7 @@ scrape → transform (LLM rewrite + judge) → generate → play
 
 Deep-dive design notes, ADRs, and flow docs live in [`wiki/`](wiki/).
 
-## Deploy (CI/CD)
+## 🚀 Deploy (CI/CD)
 
 Deploys run in **GitHub Actions** → **Cloudflare Pages** ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)):
 
@@ -60,14 +78,14 @@ Deploys run in **GitHub Actions** → **Cloudflare Pages** ([`.github/workflows/
 The deployable bundle is a clean `dist/` of just the static files + `content.json`.
 Full runbook: **[arcade/DEPLOY.md](arcade/DEPLOY.md)**.
 
-## Content
+## 📦 Content
 
 The course content this game was built from is **not** included in this repository. The
 generated `content.json` and all intermediate content are kept private and are supplied to
 the deploy pipeline separately. Only the application code, generator/scraper tooling, and
 project wiki are public here.
 
-## License
+## 📜 License
 
 **All rights reserved.** This repository is published for viewing/reference; no license to
 use, copy, modify, or redistribute the code is granted. (Intentionally omitting a `LICENSE`
