@@ -4,6 +4,13 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-15 — app.js state-logic tests ([[debt/no-tests]] #3 done) + timezone bug found
+
+- **`arcade/test_app.mjs`** (15 tests, `node:test`, no deps) closes the last no-tests remediation item. Runs the **real** `app.js` in a `vm` sandbox with stubbed browser globals (localStorage/document/window/fetch) and calls the actual functions — no copy, no refactor of the 1,532-line live file (it calls `boot()` at load, but that's `async` and starts with `await fetch(...)`, so the DOM stubs never get hit synchronously; `const`s like INTERVALS/QUEST_POOL don't attach to the vm context, so they're read via `runInContext("<name>")`). Covers `scheduleCard` SM-2 (again/hard/good/easy, box ceiling on **both** good+easy paths, ease floor, lapses, due dates), `bumpStreak` (first/same-day/consecutive/reset/freeze-bridge/milestone-once), XP floors (`awardXp`/`loseXp`), `questEvent` claim-once.
+- **Sabotage-verified** three ways: removing the freeze decrement, the XP `Math.max(0,…)` floor, or either box-ceiling `Math.min` each turns the suite red. First ceiling sabotage *passed* — exposed that my test only drove the `easy` path; fixed the test to drive both paths, re-verified it now catches a good-path regression too.
+- **Pre-existing bug found (not introduced):** on a non-UTC host, `app.js` `addDays()`/`daysBetween()` disagree — `addDays` builds *local* midnight but serializes *UTC* (`toISOString`). On IST (+5:30), `addDays(today,-1)` → `2026-07-13` and a true "1 day ago" is unreachable via addDays. Streak math across a day boundary can be off-by-one far from UTC. Recorded as [[debt/date-timezone-drift]] (severity low); tests derive seed dates from the app's own `daysBetween` reckoning to sidestep it, and a `KNOWN BUG` test pins current behavior so a fix is a visible change. Debt count 4→5 in [[index]].
+- **CI:** `test` job gains a Node step (`setup-node@20` + `node --test arcade/test_app.mjs`); `test_app.mjs` added to `paths:`. [[debt/no-tests]] severity **medium→low** — all three pure/state layers now tested + gated; only browser-integration (routing/render/timers) remains, Playwright-if-needed. All three suites green locally.
+
 ## 2026-07-15 — backlog sweep: README, generator tests, transform tests (autonomous)
 
 User said "go for next and complete all, don't wait for me" after the CI/CD landed. Worked the remaining backlog with judgment on each item:

@@ -18,6 +18,7 @@ on:
       - 'arcade/transform_content.py'
       - 'arcade/test_generate_content.py'
       - 'arcade/test_transform_content.py'
+      - 'arcade/test_app.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:            # manual "Run workflow" button (e.g. after a content push)
 
@@ -29,10 +30,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Invariant + pipeline tests (stdlib unittest, no deps)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Python — generator + transform invariants (stdlib unittest)
         run: |
           python3 arcade/test_generate_content.py
           python3 arcade/test_transform_content.py
+      - name: Node — app.js state logic (node:test, no deps)
+        run: node --test arcade/test_app.mjs
 
   deploy:
     needs: test               # a broken generator never reaches Cloudflare

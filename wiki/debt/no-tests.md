@@ -1,7 +1,7 @@
 ---
 title: No automated tests
 type: debt
-severity: medium
+severity: low
 area: [[../modules/scrape_trainercentral]]
 created: 2026-07-03
 sources: []
@@ -18,17 +18,17 @@ Personal single-purpose scraper written to solve an immediate need; correctness 
 
 ## Impact
 
-Bumped to **medium** (2026-07-06): the app is heading to a public deploy, and the game-state rules (XP economy, streak freezes, spaced-repetition scheduling) now have enough edge cases that a regression could silently corrupt player progress. The generator's quiz invariants (4 distinct options, answerIndex correctness) are re-checked ad hoc after every build rather than by a test.
+Was bumped to **medium** (2026-07-06) ahead of the public deploy, since the game-state rules (XP economy, streak freezes, spaced-repetition scheduling) have edge cases that a regression could silently corrupt. **Reduced to low (2026-07-15)** once all three layers were covered and CI-gated (see Remediation). Residual risk is browser-integration only.
 
 ## Remediation
 
 Highest-value first, all runnable without network:
 1. ✅ **Done (2026-07-15)** — Generator invariants in `arcade/test_generate_content.py` (stdlib `unittest`, no pytest dep to match the generator's stdlib-only rule). Builds a synthetic course tree → runs the generator via subprocess → asserts MCQ/cloze invariants (4 distinct options, answerIndex correctness, blank present), flashcard presence, step order, unique IDs, and determinism. Sabotage-verified (breaking `answerIndex` turns it red). Wired into CI as a `test` job that gates `deploy` (`needs: test`) — a broken generator can no longer reach Cloudflare.
 2. ✅ **Done (2026-07-15)** — `transform_content.py` pure parts in `arcade/test_transform_content.py` (19 tests, stdlib `unittest`, imports the module directly since LLM SDKs are lazy-loaded). Covers `cache_key` stability (deterministic; changes with text/id/PROMPT_VERSION → correct re-billing), `parse_verdict` tolerance (plain/fenced/prose JSON, fails-closed on unparseable/invalid/missing keys), `passes` thresholds + string-score tolerance, and the end-to-end "garbage judge output → never ships" path. Also in the CI `test` gate.
-3. `app.js` state rules via a thin node harness (`scheduleCard` transitions, `bumpStreak` freeze cases, quest claim-once).
+3. ✅ **Done (2026-07-15)** — `app.js` state rules in `arcade/test_app.mjs` (15 tests, `node:test`, no deps). Runs the **real** `app.js` in a `vm` sandbox with stubbed browser globals (localStorage/document/window/fetch), then calls the actual functions — no copy, no refactor of the live file. Covers `scheduleCard` SM-2 transitions (again/hard/good/easy, box ceiling on **both** good and easy paths, ease floor, lapse count, due-date math), `bumpStreak` (first/same-day/consecutive/reset/freeze-bridge/milestone-badge-once), XP economy floors (`awardXp` level recompute, `loseXp` floored at 0), and `questEvent` claim-once. **Sabotage-verified** (removing the freeze decrement, the XP floor, or either box-ceiling cap each turns it red). Surfaced a pre-existing timezone bug → [[date-timezone-drift]]. In the CI `test` gate (adds a Node step).
 Playwright E2E for the game flows only if regressions actually start appearing.
 
-Severity stays **medium**: the two highest-risk artifacts (the generator CI auto-deploys, and the transform judge/cache gates) are now covered, but the ~1,600-line `app.js` game-state rules (item 3) remain untested.
+Severity → **low**: all three pure/state layers are now tested and CI-gated. What remains is only browser-integration behavior (routing, rendering, timers), which Playwright would cover if regressions appear — not worth building preemptively.
 
 ## Related
 
