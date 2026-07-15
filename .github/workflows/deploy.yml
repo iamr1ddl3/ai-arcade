@@ -1,0 +1,48 @@
+name: Deploy to Cloudflare Pages
+
+# Auto-deploy on push to main (code changes here), and on demand.
+# Content (content.json) is pulled from the PRIVATE ai-arcade-content repo at build
+# time — it is never stored in this public repo. See DEPLOY.md.
+#
+# Security note: no untrusted github.event.* input is interpolated into run: steps;
+# all run: commands are static, and credentials are passed only via secrets in with:.
+on:
+  push:
+    branches: [main]
+    paths:                      # only redeploy when deployable assets change
+      - 'arcade/index.html'
+      - 'arcade/app.js'
+      - 'arcade/styles.css'
+      - 'arcade/_headers'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:            # manual "Run workflow" button (e.g. after a content push)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app shell (public repo)
+        uses: actions/checkout@v4
+
+      - name: Pull content.json from private content repo
+        uses: actions/checkout@v4
+        with:
+          repository: iamr1ddl3/ai-arcade-content
+          token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          path: _content
+
+      - name: Assemble deploy bundle (only the 4 static files + content)
+        run: |
+          mkdir -p dist/data
+          cp arcade/index.html arcade/app.js arcade/styles.css arcade/_headers dist/
+          cp _content/content.json dist/data/content.json
+          echo "Bundle contents:" && find dist -type f | sort
+          # Fail fast if content is missing/empty (guards against an empty-app deploy)
+          test -s dist/data/content.json || { echo "ERROR: content.json missing/empty"; exit 1; }
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name ai-arcade --branch main

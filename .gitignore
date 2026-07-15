@@ -44,3 +44,6 @@ arcade/.transform_cache.json
 
 # Claude Code local tooling — private workflow config, not app code
 .claude/
+
+# CI/local build output — regenerated each deploy
+arcade/dist/

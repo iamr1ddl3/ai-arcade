@@ -42,23 +42,47 @@ python3 arcade/generate_content.py --root transformed --out arcade/data/content.
 The generator is unchanged — `--root transformed` just points it at the derivative tree.
 `content.json` lands in `arcade/data/` (gitignored).
 
-## Stage 3 — deploy to Cloudflare Pages
+## Stage 3 — deploy to Cloudflare Pages (CI/CD)
+
+Deploys run in **GitHub Actions** (`.github/workflows/deploy.yml`), live at
+`https://ai-arcade-13g.pages.dev`. Two triggers:
+
+- **Code change** (index.html/app.js/styles.css/_headers) → `git push` to the public
+  `ai-arcade` repo → the workflow auto-deploys.
+- **Content change** (new/updated courses) → run `./deploy-content.sh` from the project root.
+
+### Why content doesn't live in the public repo
+
+`content.json` is derived from purchased content, so it is **not** in the public `ai-arcade`
+repo. It lives in a **private** repo, `iamr1ddl3/ai-arcade-content` (content.json only). The
+CI job checks out the app shell from the public repo, pulls `content.json` from the private
+repo, assembles a clean `dist/` (4 static files + content), and runs `wrangler pages deploy`.
+Raw source, `transformed/`, `.env`, and API keys never leave your machine.
+
+> ⚠️ **Do NOT use `wrangler pages deploy ./arcade`.** That uploads the whole folder incl.
+> `.transform_cache.json` and the Python scripts. `.assetsignore` does **not** work for Pages
+> deploys. The pipeline (and `deploy-content.sh`) always deploy a clean `dist/` — use them.
+
+### One-time setup — GitHub Secrets (you set these; they are never in code)
+
+In the `ai-arcade` repo → Settings → Secrets and variables → Actions, add:
+
+| Secret | Value |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens → "Edit Cloudflare Workers" template |
+| `CLOUDFLARE_ACCOUNT_ID` | `8fd44aa3c6082eb1f8d8e40e577a3c3b` (from `wrangler whoami`) |
+| `CONTENT_REPO_TOKEN` | Fine-grained GitHub PAT with **read** access to `ai-arcade-content` |
+
+### Adding content later
 
 ```bash
-npm install -g wrangler        # one-time
-wrangler login                 # one-time (opens browser)
-wrangler pages project create aidemy-arcade   # one-time
-
-# Deploy the static dir (uploads content.json + the app shell):
-wrangler pages deploy ./arcade --project-name aidemy-arcade
+python3 arcade/transform_content.py --course <new-course> --judge glm   # local, costs API $
+./deploy-content.sh    # regenerate content.json → push to private repo → trigger deploy
 ```
 
-→ live at `https://aidemy-arcade.pages.dev`. **Build command:** none. **Output directory:** `arcade`.
+The transform cache means only new lessons cost API calls.
 
-Hash routing (`#/...`) works natively on Pages — no `_redirects` needed. `arcade/_headers`
-sets cache rules (content.json = no-cache) and baseline security headers.
-
-### Local sanity check before deploying
+### Local sanity check before pushing
 
 ```bash
 python3 -m http.server 8000 --directory arcade
@@ -67,19 +91,21 @@ python3 -m http.server 8000 --directory arcade
 
 (`fetch()` is blocked under `file://`, so always use the server — see `README.md`.)
 
-## Scaling later (documented, not built)
+## Scaling later
 
-- **More content:** `transform_content.py --all-courses`, re-generate, re-deploy. The cache
-  means only new lessons cost API calls.
+- **More content:** `transform_content.py --all-courses`, then `./deploy-content.sh`. The cache
+  means only new lessons cost API calls. (Content deploy is now automated — see Stage 3.)
 - **Accounts / cross-device progress / leaderboards:** add Cloudflare **Workers + D1/KV** on the
   same Pages project. `app.js` uses `localStorage` today; a future sync layer would be a Worker
   API — no migration off Cloudflare.
 
-## Privacy checklist (run before any deploy)
+## Privacy checklist
 
 ```bash
-git status   # must NOT show: transformed/, arcade/data/, .transform_cache.json, .env
+git status   # public repo must NOT show: transformed/, arcade/data/, .transform_cache.json, .env
 ```
 
-Only the `arcade/` static bundle (app + transformed `content.json`) should ever leave your
-machine, and only via the explicit `wrangler` command above.
+- **Public repo (`ai-arcade`):** app shell + wiki only. No content.
+- **Private repo (`ai-arcade-content`):** `content.json` only — never raw source, `.env`, or keys.
+- **Never** `raw/` anywhere off your machine (immutable purchased source).
+- The CI job deploys a clean `dist/` (4 static files + content.json) — nothing else ships.
