@@ -10,6 +10,10 @@
 /styles.css
   Cache-Control: max-age=3600
 
+# Logo/icon assets rarely change — cache for a day.
+/assets/*
+  Cache-Control: max-age=86400
+
 # Baseline security headers for the whole site.
 /*
   X-Content-Type-Options: nosniff

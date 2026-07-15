@@ -7,11 +7,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>PixelPlayground</title>
-  <link rel="stylesheet" href="styles.css?v=10">
+  <meta name="description" content="A zero-build browser arcade for AI/ML interview prep — quizzes, flashcards, boss battles, and a roguelike gauntlet across 20 courses.">
+
+  <!-- favicons / app icons -->
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <!-- social preview -->
+  <meta property="og:title" content="PixelPlayground">
+  <meta property="og:description" content="A gamified arcade for AI/ML interview prep — quizzes, boss battles, and a roguelike gauntlet.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="assets/og-image.png">
+
+  <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#/home">🎮 PixelPlayground</a>
+    <a class="brand" href="#/home">
+      <img class="brand-mark" src="assets/logo-mark.png" alt="" width="28" height="28">
+      <span class="brand-name">PixelPlayground</span>
+    </a>
     <div class="stats-strip" id="statsStrip"><!-- filled by app.js --></div>
     <nav class="topnav">
       <a href="#/home">Map</a>
@@ -39,6 +57,6 @@
        If the file is missing, build it first: <code>python3 arcade/generate_content.py</code></p>
   </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

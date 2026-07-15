@@ -14,6 +14,8 @@ on:
       - 'arcade/app.js'
       - 'arcade/styles.css'
       - 'arcade/_headers'
+      - 'arcade/favicon.ico'
+      - 'arcade/assets/**'
       - 'arcade/generate_content.py'
       - 'arcade/transform_content.py'
       - 'arcade/test_generate_content.py'
@@ -54,14 +56,17 @@ jobs:
           token: ${{ secrets.CONTENT_REPO_TOKEN }}
           path: _content
 
-      - name: Assemble deploy bundle (only the 4 static files + content)
+      - name: Assemble deploy bundle (static app shell + assets + content)
         run: |
-          mkdir -p dist/data
-          cp arcade/index.html arcade/app.js arcade/styles.css arcade/_headers dist/
+          mkdir -p dist/data dist/assets
+          cp arcade/index.html arcade/app.js arcade/styles.css arcade/_headers arcade/favicon.ico dist/
+          cp arcade/assets/*.png dist/assets/
           cp _content/content.json dist/data/content.json
           echo "Bundle contents:" && find dist -type f | sort
           # Fail fast if content is missing/empty (guards against an empty-app deploy)
           test -s dist/data/content.json || { echo "ERROR: content.json missing/empty"; exit 1; }
+          # Guard: logo mark must be present (a broken brand image ships silently otherwise)
+          test -s dist/assets/logo-mark.png || { echo "ERROR: logo assets missing"; exit 1; }
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

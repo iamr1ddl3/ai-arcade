@@ -4,6 +4,14 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-16 — brand logo integrated (header mark, favicon, OG image)
+
+- User supplied `arcade/assets/logo.png` (1786×1420, isometric joystick + stacked "PIXEL / PLAYGROUND" wordmark, brand purple `#351780`). Wired it in three places per user's pick (header + favicon + OG).
+- **Derived assets from the one source** (Pillow, in `.venv`): scanned content bands to locate the joystick (y 224–862) vs wordmark, cropped a centered 790×790 **`logo-mark.png`** (joystick only — the full square wordmark is illegible at header/favicon size). From the mark: `favicon-32.png`, `apple-touch-icon.png` (180), `favicon.ico` (16/32/48). From the full logo: `og-image.png` (1200×630, centered on brand purple).
+- **Header:** replaced the `🎮 PixelPlayground` text link with `<img class="brand-mark">` (28px, 7px radius, 1px edge ring) + `PixelPlayground` text; `.brand` → inline-flex. **Favicon + apple-touch-icon + OG/Twitter meta** added to `<head>`; assets bumped `?v=11`. `_headers` caches `/assets/*` for a day.
+- **CI fix (important):** the deploy job assembles a `dist/` by copying named files — it did **not** copy `assets/` or `favicon.ico`, so the logo would have shipped broken. Updated the assembly to copy `favicon.ico` + `assets/*.png`, added a `test -s dist/assets/logo-mark.png` guard (fails the deploy if the mark is missing), and added `arcade/assets/**` + `favicon.ico` to the `paths:` trigger.
+- `.DS_Store` in assets/ confirmed gitignored (not committed); dropped the 512px preview crop (unreferenced). Verified all assets serve 200 with correct MIME types locally (browser preview tool was unavailable, so verified via curl + direct image inspection of the crop/OG).
+
 ## 2026-07-15 — app.js state-logic tests ([[debt/no-tests]] #3 done) + timezone bug found
 
 - **`arcade/test_app.mjs`** (15 tests, `node:test`, no deps) closes the last no-tests remediation item. Runs the **real** `app.js` in a `vm` sandbox with stubbed browser globals (localStorage/document/window/fetch) and calls the actual functions — no copy, no refactor of the 1,532-line live file (it calls `boot()` at load, but that's `async` and starts with `await fetch(...)`, so the DOM stubs never get hit synchronously; `const`s like INTERVALS/QUEST_POOL don't attach to the vm context, so they're read via `runInContext("<name>")`). Covers `scheduleCard` SM-2 (again/hard/good/easy, box ceiling on **both** good+easy paths, ease floor, lapses, due dates), `bumpStreak` (first/same-day/consecutive/reset/freeze-bridge/milestone-once), XP floors (`awardXp`/`loseXp`), `questEvent` claim-once.
