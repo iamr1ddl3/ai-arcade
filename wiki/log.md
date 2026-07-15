@@ -4,6 +4,16 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-15 — backlog sweep: README, generator tests, transform tests (autonomous)
+
+User said "go for next and complete all, don't wait for me" after the CI/CD landed. Worked the remaining backlog with judgment on each item:
+
+- **#1 README + LICENSE (done):** Added top-level `README.md` as the public front page (product, live link, architecture, CI/CD) with an explicit **All rights reserved** section; deliberately **no `LICENSE` file** (user chose all-rights-reserved — adding one would grant rights). Fixed the stale `wrangler pages deploy ./arcade` command in `arcade/README.md` (the exact deploy trap).
+- **#2 no-tests debt, remediation #1 + #2 (done):** `arcade/test_generate_content.py` (7 tests, stdlib `unittest` — chosen over pytest to honor the generator's stdlib-only rule) drives the generator via subprocess over a synthetic fixture and asserts MCQ/cloze invariants, flashcard presence, step order, unique IDs, determinism; **sabotage-verified** (breaking `answerIndex` turns it red). `arcade/test_transform_content.py` (19 tests, imports the module directly — SDKs lazy-load) locks `cache_key` stability, `parse_verdict` fail-closed tolerance, `passes` thresholds. **Wired into CI**: new `test` job, `deploy` gated by `needs: test` — a broken generator/judge can never reach Cloudflare. Verified green in real CI (run 29433652826: test → deploy).
+- **#3 content-gap topics (NOT actioned — deliberately):** Completing this autonomously would mean either fabricating course content (new courses need real source material through the transform pipeline — none exists) or spending the user's GLM API budget on freshness re-transforms (irreversible cost, needs keys + raw source). "Don't wait for me" covers code decisions, not spending money or inventing curriculum. The one cheap win (model-ref sweep) was already done 2026-07-10. Left for a user go-ahead. Instead redirected the effort into no-tests remediation #2 (real, free, network-free hardening).
+- **#4 vendor-blocked courses (NOT actionable):** blocked on the TrainerCentral API outage — nothing to build, retry when the vendor is back.
+- Remaining after this sweep: `app.js` game-state tests (no-tests #3), content freshness/new courses (user-gated on API $), 2 blocked courses (vendor).
+
 ## 2026-07-15 — public repo + Cloudflare deploy + CI/CD pipeline
 
 - **Published to GitHub** (`iamr1ddl3/ai-arcade`, public). Pre-publish safety verified: only 50 tracked files (app code, wiki, skills, hooks); `tc_scrape_output/`, `transformed/`, `arcade/data/`, `.env` all gitignored + confirmed absent from remote; secret scan = only false positives. Later removed `.claude/` from the repo (private workflow tooling — gitignored; still in history, no secrets so accepted).

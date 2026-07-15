@@ -24,11 +24,11 @@ Bumped to **medium** (2026-07-06): the app is heading to a public deploy, and th
 
 Highest-value first, all runnable without network:
 1. ✅ **Done (2026-07-15)** — Generator invariants in `arcade/test_generate_content.py` (stdlib `unittest`, no pytest dep to match the generator's stdlib-only rule). Builds a synthetic course tree → runs the generator via subprocess → asserts MCQ/cloze invariants (4 distinct options, answerIndex correctness, blank present), flashcard presence, step order, unique IDs, and determinism. Sabotage-verified (breaking `answerIndex` turns it red). Wired into CI as a `test` job that gates `deploy` (`needs: test`) — a broken generator can no longer reach Cloudflare.
-2. `transform_content.py` pure parts: `cache_key` stability, `parse_verdict` tolerance, `extract_steps`/`cloze_term`.
+2. ✅ **Done (2026-07-15)** — `transform_content.py` pure parts in `arcade/test_transform_content.py` (19 tests, stdlib `unittest`, imports the module directly since LLM SDKs are lazy-loaded). Covers `cache_key` stability (deterministic; changes with text/id/PROMPT_VERSION → correct re-billing), `parse_verdict` tolerance (plain/fenced/prose JSON, fails-closed on unparseable/invalid/missing keys), `passes` thresholds + string-score tolerance, and the end-to-end "garbage judge output → never ships" path. Also in the CI `test` gate.
 3. `app.js` state rules via a thin node harness (`scheduleCard` transitions, `bumpStreak` freeze cases, quest claim-once).
 Playwright E2E for the game flows only if regressions actually start appearing.
 
-Severity stays **medium**: the highest-risk artifact (the generator, which CI auto-deploys) is now covered, but the ~1,600-line `app.js` game-state rules and the transform pipeline remain untested.
+Severity stays **medium**: the two highest-risk artifacts (the generator CI auto-deploys, and the transform judge/cache gates) are now covered, but the ~1,600-line `app.js` game-state rules (item 3) remain untested.
 
 ## Related
 
