@@ -5,7 +5,7 @@ severity: medium
 area: [[../modules/scrape_trainercentral]]
 created: 2026-07-03
 sources: []
-updated: 2026-07-06
+updated: 2026-07-15
 ---
 
 # No automated tests
@@ -23,10 +23,12 @@ Bumped to **medium** (2026-07-06): the app is heading to a public deploy, and th
 ## Remediation
 
 Highest-value first, all runnable without network:
-1. Generator invariants as a pytest (parse a fixture course → assert option/answer/cloze/steps invariants + determinism).
+1. ✅ **Done (2026-07-15)** — Generator invariants in `arcade/test_generate_content.py` (stdlib `unittest`, no pytest dep to match the generator's stdlib-only rule). Builds a synthetic course tree → runs the generator via subprocess → asserts MCQ/cloze invariants (4 distinct options, answerIndex correctness, blank present), flashcard presence, step order, unique IDs, and determinism. Sabotage-verified (breaking `answerIndex` turns it red). Wired into CI as a `test` job that gates `deploy` (`needs: test`) — a broken generator can no longer reach Cloudflare.
 2. `transform_content.py` pure parts: `cache_key` stability, `parse_verdict` tolerance, `extract_steps`/`cloze_term`.
 3. `app.js` state rules via a thin node harness (`scheduleCard` transitions, `bumpStreak` freeze cases, quest claim-once).
 Playwright E2E for the game flows only if regressions actually start appearing.
+
+Severity stays **medium**: the highest-risk artifact (the generator, which CI auto-deploys) is now covered, but the ~1,600-line `app.js` game-state rules and the transform pipeline remain untested.
 
 ## Related
 
