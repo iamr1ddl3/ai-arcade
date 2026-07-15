@@ -64,9 +64,12 @@ your own derivative material first. The pipeline is **transform (GLM rewrite + j
 
 ```bash
 python3 arcade/transform_content.py --course advanced-rag --judge glm   # → transformed/
-python3 arcade/generate_content.py  --root transformed                  # → data/content.json
-wrangler pages deploy ./arcade --project-name aidemy-arcade             # → public URL
+./deploy-content.sh                                                     # generate + deploy via CI
 ```
+
+> ⚠️ Do **not** run `wrangler pages deploy ./arcade` — it uploads the whole folder incl. the
+> LLM cache and scripts. Deploys go through the CI pipeline (a clean `dist/`); see
+> [DEPLOY.md](DEPLOY.md).
 
 ## Files
 
