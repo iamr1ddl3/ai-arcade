@@ -75,17 +75,21 @@ const COURSE_BY_ID = new Map();  // id -> course
 const SECTION_BY_KEY = new Map();// "courseId/sectionId" -> section
 let ACTIVE_TIMER = null;         // boss-battle interval id; cleared on every navigation
 
-// ---------- date helpers (local day) ----------
+// ---------- date helpers (UTC day) ----------
+// All three reckon in UTC: todayStr serializes via toISOString (UTC), so addDays/
+// daysBetween MUST parse "T00:00:00Z" and use setUTCDate — otherwise a non-UTC host
+// builds local midnight, and the local→UTC shift drifts the day (streak math off by
+// one). See wiki/debt/date-timezone-drift.
 function todayStr(d = new Date()) {
   return d.toISOString().slice(0, 10);
 }
 function addDays(dateStr, days) {
-  const d = new Date(dateStr + "T00:00:00");
-  d.setDate(d.getDate() + Math.round(days));
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + Math.round(days));
   return todayStr(d);
 }
 function daysBetween(a, b) {
-  return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
+  return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000);
 }
 
 // ---------- persistence ----------
@@ -142,11 +146,12 @@ function saveProgress(p) {
 function levelForXp(xp) { return Math.max(1, Math.floor(Math.sqrt(xp / 50)) + 1); }
 function xpForLevel(level) { return 50 * (level - 1) * (level - 1); }
 
-// Monday of the current local week — the key for weekly quests / weekly XP.
+// Monday of the current UTC week — the key for weekly quests / weekly XP.
+// UTC throughout to match todayStr/addDays/daysBetween (see date-helpers note above).
 function weekKey(d = new Date()) {
-  const day = (d.getDay() + 6) % 7; // Mon=0 .. Sun=6
+  const day = (d.getUTCDay() + 6) % 7; // Mon=0 .. Sun=6
   const monday = new Date(d);
-  monday.setDate(d.getDate() - day);
+  monday.setUTCDate(d.getUTCDate() - day);
   return todayStr(monday);
 }
 
@@ -831,12 +836,7 @@ function runQuiz({ course, backHash, title, questions, timed, onFinish, seconds,
   function updateBossBar() {
     const bar = document.querySelector(".boss-bar");
     if (!bar || !bossHp) return;
-    const faces = { 1: "👹", 2: "😡", 3: "🔥" };
-    bar.querySelector(".boss-face").textContent = faces[bossPhase()];
-    const hpbar = bar.querySelector(".hpbar");
-    hpbar.className = `hpbar phase-${bossPhase()}`;
-    hpbar.querySelector("i").style.width = Math.round((hp / bossHp) * 100) + "%";
-    bar.querySelector(".hp-text").textContent = `${hp} HP`;
+    bar.outerHTML = bossBarHtml(); // same markup bossBarHtml() renders — no hand-patched nodes
   }
   function setVerdict(text, ok) {
     const verdict = document.getElementById("verdict");

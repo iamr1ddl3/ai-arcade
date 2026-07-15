@@ -356,7 +356,6 @@ def build():
                     "title": lesson["title"],
                     "order": lesson["order"],
                     "answer": lesson["answer"],
-                    "answerSource": lesson["answerSource"],
                     "flashcard": {"front": lesson["title"], "back": lesson["answer"]},
                 }
                 if lesson["steps"]:

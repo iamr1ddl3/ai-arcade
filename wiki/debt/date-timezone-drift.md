@@ -1,14 +1,23 @@
 ---
 title: Date helpers mix local construction with UTC serialization
 type: debt
-severity: low
+severity: resolved
 area: [[../modules/arcade-app]]
 created: 2026-07-15
 sources: []
-updated: 2026-07-15
+updated: 2026-07-16
 ---
 
 # Date helpers mix local construction with UTC serialization
+
+> **RESOLVED 2026-07-16.** `addDays`/`daysBetween` now parse `"T00:00:00Z"` and use
+> `setUTCDate`; `weekKey` switched to `getUTCDay`/`setUTCDate`. All four helpers reckon
+> in UTC, so they agree in any host timezone. Verified: the app.js suite (15 tests)
+> passes under UTC, IST (+5:30), Samoa (+13), and Hawaii (-10); the pinned "KNOWN BUG"
+> test was flipped to assert exact round-trip (`date helpers: addDays/daysBetween
+> round-trip exactly`). Proof of the pre-fix defect: in IST, old `addDays(today, -1)`
+> returned a date **two** days back, read by `daysBetween` as `-2` (4/4 round-trips
+> failed); post-fix, 0 failures.
 
 `app.js` date helpers build `Date`s at **local** midnight but serialize them as **UTC**, so on a machine whose timezone is not UTC, `addDays()` and `daysBetween()` can disagree by a day. Surfaced while writing the app.js state tests ([[no-tests]] remediation #3), not introduced by them.
 

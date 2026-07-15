@@ -266,3 +266,11 @@ User said "go for next and complete all, don't wait for me" after the CI/CD land
 - Recommendation: do freshness-pass (B) before new courses (A); model-reference sweep is cheapest single win.
 - Filed [[analyses/content-gap-ai-field-2026-07-07]]. User elected research-brief-only — no drafting/audit this session.
 - Next: on request, either regenerate stale courses via transform pipeline or draft new-course source material for gaps 1–3.
+
+## 2026-07-16 — fix: date-helper timezone drift (root cause)
+
+- Fixed [[debt/date-timezone-drift]] (was severity:low → resolved). Root cause: `addDays`/`daysBetween` parsed `"T00:00:00"` (local midnight) but serialized via `todayStr`→`toISOString` (UTC), so on non-UTC hosts the day drifted.
+- Change (~6 lines, [[modules/arcade-app]]): `addDays`/`daysBetween` now parse `"T00:00:00Z"` + `setUTCDate`; `weekKey` switched to `getUTCDay`/`setUTCDate`. One guard-at-the-source fix — all 16 callers (streak math, SM-2 scheduling, daily/weekly keys) route through these three, so no per-caller patches.
+- Flipped the pinned `KNOWN BUG` test to assert exact round-trip across gaps [1,2,7,16,35,-1,-3].
+- Verified: 15/15 app.js tests pass under UTC, IST (+5:30), Samoa (+13), Hawaii (-10). Pre-fix proof in IST: old `addDays(today,-1)` → 2-days-back, `daysBetween` read `-2` (4/4 round-trips failed); post-fix 0 failures.
+- Same session (ponytail-audit follow-up): also cut dead `answerSource` field from generate_content.py and shrank `updateBossBar()` to reuse `bossBarHtml()`.

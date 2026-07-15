@@ -253,21 +253,17 @@ test("questEvent: quest XP is awarded at most once, even past target", () => {
   assert.equal(new Set(claimedIds).size, claimedIds.length, "no duplicate claims");
 });
 
-// ---------- documented pre-existing quirk ----------
-// KNOWN BUG (surfaced while writing these tests, NOT introduced by them): on a
-// machine whose timezone is not UTC, addDays() and daysBetween() disagree, because
-// addDays builds a *local*-midnight Date and serializes it as *UTC*
-// (todayStr -> toISOString). In a browser the drift is usually self-cancelling for
-// same-day comparisons, but streak math across a day boundary can be off by one in
-// non-UTC zones. Tracked in wiki/debt (date-timezone-drift). This test pins the
-// current behavior so a future fix is a deliberate, visible change — not a silent one.
-test("KNOWN BUG: addDays/daysBetween can disagree off-UTC (documented, not asserted-correct)", () => {
+// ---------- date-helper UTC consistency (was: KNOWN BUG, now fixed) ----------
+// addDays/daysBetween/todayStr all reckon in UTC, so they agree in ANY host
+// timezone — no off-by-one drift across a day boundary. This previously pinned the
+// buggy local-vs-UTC behavior; the fix (parse "T00:00:00Z", setUTCDate) makes these
+// round-trip exactly. Tracked in wiki/debt/date-timezone-drift.
+test("date helpers: addDays/daysBetween round-trip exactly (UTC, host-TZ independent)", () => {
   const sb = makeSandbox();
   const today = val(sb, "todayStr()");
-  const back1 = val(sb, `addDays("${today}", -1)`);
-  const measured = val(sb, `daysBetween("${back1}", "${today}")`);
-  // We only assert it's a positive integer — the exact value depends on the host TZ.
-  // The point is to document that `measured` is NOT guaranteed to be 1 off-UTC.
-  assert.ok(Number.isInteger(measured) && measured >= 1,
-    `daysBetween(addDays(today,-1), today) = ${measured} (host-TZ dependent)`);
+  for (const gap of [1, 2, 7, 16, 35, -1, -3]) {
+    const shifted = val(sb, `addDays("${today}", ${gap})`);
+    const measured = val(sb, `daysBetween("${today}", "${shifted}")`);
+    assert.equal(measured, gap, `daysBetween(today, addDays(today, ${gap})) should be ${gap}`);
+  }
 });
