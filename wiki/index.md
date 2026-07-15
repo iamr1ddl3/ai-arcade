@@ -12,7 +12,7 @@ Master table of contents for the aidemy-bundle wiki.
 - `debt/` — known issues / tech debt (4)
 - `scaling/` — scaling plans (0)
 - `concepts/` — cross-cutting lore (0)
-- `analyses/` — investigations, backtests, audits (1)
+- `analyses/` — investigations, backtests, audits (2)
 - `judgment/` — scoring rubrics (1)
 - `architecture/system-map.md` — top-level system map
 
@@ -40,6 +40,7 @@ Master table of contents for the aidemy-bundle wiki.
 
 ### analyses/
 - [[analyses/backtest-initial-map-2026-07-03]] — 100% structural/accuracy/coverage/Q&A backtest, all findings fixed same session
+- [[analyses/content-gap-ai-field-2026-07-07]] — mid-2026 AI content gap & freshness analysis: 5 missing topics, 6 stale courses
 
 ### judgment/
 - [[judgment/lesson-transform-quality]] — rubric for scoring GLM-rewritten lessons (quality/defensibility/correctness) before public deploy

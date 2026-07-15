@@ -4,6 +4,15 @@ Append-only. Newest entries at top. Never edit past entries.
 
 ---
 
+## 2026-07-10 — model-reference freshness sweep (surgical, not catalog-wide)
+
+- Actioned the "cheapest single win" from [[analyses/content-gap-ai-field-2026-07-07]]. On inspection the sweep is far smaller than the analysis implied ("touches nearly every course"): of ~46 model-name matches in `transformed/`, **most are legitimate and were deliberately kept** — `Mixtral` (7×, real MoE architecture example), `Llama-2-7b-hf` (runnable HF model ID in a QLoRA `bitsandbytesconfig`), `claude-3-5-sonnet-latest` (valid ID in a provider-switch code sample), `gpt-4.1-mini` (7×, already a 2025-era model), and two lesson **titles** that are *about migrating off* old models (`…distill-gpt-4-into-a-7b…`, `…migrate-from-gpt-4-turbo…`) — renaming would break the lesson's point and drift the filename/progress key.
+- **Only 4 genuinely-dated illustrative prose refs edited** (baseline: GPT-5.5 / Claude Opus 4.8 / Gemini 3): `agentic-ai-patterns/…/06` "GPT-4 or Claude"→"GPT-5.5 or Claude Opus 4.8"; `scenerio-based-questions/…advanced-architectures…/01` "GPT-4o, Gemini"→"GPT-5.5, Gemini 3"; `…llm-prompting-cost-latency/04` determinism example `gpt-4`→`gpt-5.5`; `python-essentials/…/02` dict-literal `{"model":"gpt-4"}`→`gpt-5.5`.
+- **Applied by hand-editing the `transformed/` .md files** (user-chosen over cache-evict + re-transform — trivial noun swaps a judge would pass, and GLM re-transform wouldn't deterministically produce these names anyway). These 4 lines are now **hand-tuned post-judge**: they no longer match the GLM rewrite the independent Claude judge signed off on, but the change is factual model-name modernization only, not a content rewrite. Cache untouched (a future re-transform of these lessons would silently revert them — acceptable, documented here).
+- **Regenerated `content.json`** (`generate_content.py --root ../transformed`): 20 courses / 1022 playable / **0 quiz-invariant violations**. Browser-verified served JSON + console clean (0 errors).
+- **Reach caveat (important):** the generator only extracts `answer`/`answerSource`/`flashcard`/`quiz`/`cloze` from each lesson — **not** the full body prose. Only 1 of the 4 edits (the determinism `gpt-5.5`, which sits in that lesson's answer body) actually surfaces in the app; the other 3 live in "how it works" prose the generator drops. They were corrected in `transformed/` anyway (derivative source of record + future-proof if field extraction widens), but user-visible impact = one line. The `analyses` page's "touches nearly every course" framing was over-stated; the real dated-prose surface is tiny.
+- Untouched: 2 vendor-blocked courses, Cloudflare deploy (still user-gated), [[debt/no-tests]].
+
 ## 2026-07-06 — committed: arcade v1 + wiki (milestone arcade-v1)
 
 - Committed the full week's work. Code commit `85f9817` — `arcade/` (transform pipeline, generator, SPA game, deploy runbook) + `.claude/launch.json` + `.gitignore`, 10 files / 3,170 insertions. Pre-commit checks: `.env`, `tc_scrape_output/`, `transformed/`, `arcade/data/`, transform cache all confirmed gitignored; `__pycache__` ignored; dry-run add showed only app code tracked.
@@ -214,3 +223,12 @@ Append-only. Newest entries at top. Never edit past entries.
 - Bootstrapped via `init-wiki-skeleton`.
 - Project: aidemy-bundle.
 - Next: run "map this codebase" in Claude Code.
+
+## 2026-07-07 — content gap & freshness research
+
+- User asked which current AI topics to add and whether existing content is still up to date (incl. MCP/protocols).
+- Ran 6 web searches (in-demand skills, MCP/A2A, context engineering, evals/observability, reasoning+SLM/edge, agent security) vs. the 20-course catalog.
+- Findings: 5 missing table-stakes topics (MCP & A2A, Context Engineering, Agent Security/Red-Teaming, SLMs & Edge AI, Reasoning/Test-Time Compute); 6 existing courses need freshness pass (RAG→hybrid, prompt→context framing, eval→Agent-as-Judge, llmops→OTel, agentic→MCP cross-ref, model-name sweep to GPT-5.5/Opus 4.8/Gemini 3).
+- Recommendation: do freshness-pass (B) before new courses (A); model-reference sweep is cheapest single win.
+- Filed [[analyses/content-gap-ai-field-2026-07-07]]. User elected research-brief-only — no drafting/audit this session.
+- Next: on request, either regenerate stale courses via transform pipeline or draft new-course source material for gaps 1–3.
