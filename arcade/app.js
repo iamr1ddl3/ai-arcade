@@ -1,4 +1,4 @@
-/* AIdemy Arcade — vanilla SPA game logic.
+/* PixelPlayground — vanilla SPA game logic.
  * Loads data/content.json, drives a hash-router SPA, persists progress in localStorage.
  *
  * XSS note: lesson text comes from scraped markdown (semi-trusted). Every dynamic value

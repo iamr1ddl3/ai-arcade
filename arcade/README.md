@@ -1,4 +1,4 @@
-# AIdemy Arcade 🎮
+# PixelPlayground 🎮
 
 A self-contained, offline, browser-based learning **game** generated from the scraped
 AIdemy course content in `../tc_scrape_output/`. Turns ~1000 AI/ML interview-prep Q&A

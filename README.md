@@ -1,4 +1,4 @@
-# AI Arcade 🎮
+# PixelPlayground 🎮
 
 A zero-build, browser-based **learning game** for AI/ML interview prep. Turns study
 material into quizzes, flashcards, boss battles, and a roguelike gauntlet — with XP,
