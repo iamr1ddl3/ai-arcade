@@ -41,3 +41,6 @@ arcade/data/
 transformed/
 arcade/.transform_cache.json
 .transform_cache.json
+
+# Claude Code local tooling — private workflow config, not app code
+.claude/
