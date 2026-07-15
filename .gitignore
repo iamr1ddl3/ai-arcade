@@ -47,3 +47,6 @@ arcade/.transform_cache.json
 
 # CI/local build output — regenerated each deploy
 arcade/dist/
+
+# Wrangler local state
+.wrangler/
